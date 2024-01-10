@@ -1,0 +1,8 @@
+apiVersion: gcp.platform.upbound.io/v1alpha1
+kind: XNetwork
+metadata:
+  name: ref-gcp-network
+spec:
+  parameters:
+    id: ref-gcp-network-from-xr
+    region: us-west2
