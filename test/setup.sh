@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -aeuo pipefail
 
+UPTEST_GCP_PROJECT=${UPTEST_GCP_PROJECT:-official-provider-testing}
+
 echo "Running setup.sh"
 echo "Waiting until all configurations are healthy/installed..."
 "${KUBECTL}" wait configuration.pkg --all --for=condition=Healthy --timeout 5m
