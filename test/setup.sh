@@ -7,6 +7,7 @@ echo "Running setup.sh"
 echo "Waiting until all configurations are healthy/installed..."
 "${KUBECTL}" wait configuration.pkg --all --for=condition=Healthy --timeout 5m
 "${KUBECTL}" wait configuration.pkg --all --for=condition=Installed --timeout 5m
+"${KUBECTL}" wait configurationrevisions.pkg --all --for=condition=Healthy --timeout 5m
 
 echo "Creating cloud credential secret..."
 "${KUBECTL}" -n upbound-system create secret generic gcp-creds --from-literal=credentials="${UPTEST_CLOUD_CREDENTIALS}" \
