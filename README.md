@@ -14,8 +14,8 @@ The core components of a custom API in [Crossplane](https://docs.crossplane.io/v
 
 In this specific configuration, the GCP network API contains:
 
-- **an GCP network (/apis/definition.yaml) custom resource type.**
-- **Composition of the GCP network resources:** Configured in [/apis/composition.yaml](/apis/composition.yaml), it provisions an GCP networkand resources in the `upbound-system` namespace.
+- **an [GCP network](/apis/definition.yaml) custom resource type.**
+- **Composition of the GCP network resources:** Configured in [/apis/composition.yaml](/apis/composition.yaml), it provisions GCP network resources in the `upbound-system` namespace.
 
 This repository contains an Composite Resource (XR) file.
 
@@ -25,9 +25,9 @@ This repository contains an Composite Resource (XR) file.
 apiVersion: pkg.crossplane.io/v1
 kind: Configuration
 metadata:
-  name: PACKAGE NAME
+  name: configuration-gcp-network
 spec:
-  package: PACKAGE SPEC
+  package: xpkg.upbound.io/upbound/configuration-gcp-network:v0.1.0
 ```
 
 ## Next steps
