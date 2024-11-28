@@ -2,6 +2,9 @@ apiVersion: gcp.platform.upbound.io/v1alpha1
 kind: XNetwork
 metadata:
   name: ref-gcp-network
+  annotations:
+    render.crossplane.io/composition-path: apis/default/composition.yaml
+    render.crossplane.io/function-path: examples/functions.yaml
 spec:
   parameters:
     id: ref-gcp-network-from-xr
