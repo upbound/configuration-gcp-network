@@ -3,4 +3,4 @@ kind: Configuration
 metadata:
   name: configuration-gcp-network
 spec:
-  package: xpkg.upbound.io/upbound/configuration-gcp-network:v0.1.0
+  package: xpkg.upbound.io/upbound/configuration-gcp-network:v0.7.1
