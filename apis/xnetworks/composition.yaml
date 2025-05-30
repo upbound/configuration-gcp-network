@@ -9,7 +9,7 @@ spec:
   mode: Pipeline
   pipeline:
   - functionRef:
-      name: upbound-demo-configuration-gcp-networkxnetwork
+      name: upbound-configuration-gcp-networkxnetwork
     step: xnetwork
   - functionRef:
       name: crossplane-contrib-function-auto-ready

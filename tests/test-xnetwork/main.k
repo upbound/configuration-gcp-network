@@ -21,17 +21,6 @@ _items = [
                             region = "us-west2"
                         }
                     }
-                    status = {
-                        conditions = [
-                            {
-                                lastTransitionTime = "2024-01-01T00:00:00Z"
-                                message = "Unready resources: network, subnetwork"
-                                reason = "Creating"
-                                status = "False"
-                                $type = "Ready"
-                            }
-                        ]
-                    }
                 }
                 computev1beta1.Network{
                     metadata = {
