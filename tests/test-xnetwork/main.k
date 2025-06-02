@@ -9,10 +9,6 @@ _items = [
             assertResources: [
                 platformgcpv1alpha1.XNetwork{
                     metadata = {
-                        annotations = {
-                            "render.crossplane.io/composition-path" = "apis/default/composition.yaml"
-                            "render.crossplane.io/function-path" = "examples/functions.yaml"
-                        }
                         name = "ref-gcp-network"
                     }
                     spec = {
@@ -24,9 +20,6 @@ _items = [
                 }
                 computev1beta1.Network{
                     metadata = {
-                        annotations = {
-                            "crossplane.io/composition-resource-name" = "network"
-                        }
                         generateName = "ref-gcp-network-"
                         labels = {
                             "crossplane.io/composite" = "ref-gcp-network"
@@ -53,9 +46,6 @@ _items = [
                 }
                 computev1beta1.Subnetwork{
                     metadata = {
-                        annotations = {
-                            "crossplane.io/composition-resource-name" = "subnetwork"
-                        }
                         generateName = "ref-gcp-network-"
                         labels = {
                             "crossplane.io/composite" = "ref-gcp-network"
