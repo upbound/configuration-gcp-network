@@ -1,0 +1,17 @@
+apiVersion: meta.dev.upbound.io/v1alpha1
+kind: Project
+metadata:
+  name: configuration-gcp-network
+spec:
+  dependsOn:
+  - provider: xpkg.upbound.io/upbound/provider-gcp-compute
+    version: '>=v0.0.0'
+  - function: xpkg.upbound.io/crossplane-contrib/function-auto-ready
+    version: '>=v0.0.0'
+  description: This is where you can describe your project.
+  license: Apache-2.0
+  maintainer: Upbound <support@upbound.io>
+  readme: |
+    This configuration is used for deploying and managing GCP network clusters on Kubernetes using Crossplane. This setup provides the necessary infrastructure to deploy GCP network managed with Crossplane in Kubernetes. This approach ensures a flexible, streamlined deployment workflow.
+  repository: xpkg.upbound.io/upbound/configuration-gcp-network
+  source: https://github.com/upbound/configuration-gcp-network
