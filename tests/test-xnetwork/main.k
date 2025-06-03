@@ -26,16 +26,6 @@ _items = [
                             "networks.gcp.platform.upbound.io/network-id" = "ref-gcp-network-from-xr"
                         }
                         name = "ref-gcp-network-from-xr"
-                        ownerReferences = [
-                            {
-                                apiVersion = "gcp.platform.upbound.io/v1alpha1"
-                                blockOwnerDeletion = True
-                                controller = True
-                                kind = "XNetwork"
-                                name = "ref-gcp-network"
-                                uid = ""
-                            }
-                        ]
                     }
                     spec = {
                         forProvider = {
@@ -51,16 +41,6 @@ _items = [
                             "crossplane.io/composite" = "ref-gcp-network"
                             "networks.gcp.platform.upbound.io/network-id" = "ref-gcp-network-from-xr"
                         }
-                        ownerReferences = [
-                            {
-                                apiVersion = "gcp.platform.upbound.io/v1alpha1"
-                                blockOwnerDeletion = True
-                                controller = True
-                                kind = "XNetwork"
-                                name = "ref-gcp-network"
-                                uid = ""
-                            }
-                        ]
                     }
                     spec = {
                         forProvider = {
