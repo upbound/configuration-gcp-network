@@ -1,11 +1,7 @@
-
 import models.io.upbound.gcp.compute.v1beta1 as computev1beta1
 import models.io.upbound.platform.gcp.v1alpha1 as platformgcpv1alpha1
 
 oxr = platformgcpv1alpha1.XNetwork{**option("params").oxr} # observed composite resource
-_ocds = option("params").ocds # observed composed resources
-_dxr = option("params").dxr # desired composite resource
-dcds = option("params").dcds # desired composed resources
 params = oxr.spec.parameters
 
 _metadata = lambda name: str -> any {
@@ -47,17 +43,17 @@ computev1beta1.Subnetwork{
             privateIpGoogleAccess: True
             secondaryIpRange: [
                 {
-                ipCidrRange: "10.200.0.0/14"
-                rangeName: "pods"
+                    ipCidrRange: "10.200.0.0/14"
+                    rangeName: "pods"
                 },
                 {
-                ipCidrRange: "10.204.0.0/16"
-                rangeName: "services"
+                    ipCidrRange: "10.204.0.0/16"
+                    rangeName: "services"
                 },
             ]
         }
     }
 }
 ]
-items = _items
 
+items = _items
