@@ -35,6 +35,7 @@ _items = [
                 }
                 computev1beta1.Subnetwork{
                     metadata = {
+                        generateName = "ref-gcp-network-"
                         labels = {
                             "crossplane.io/composite" = "ref-gcp-network"
                             "networks.gcp.platform.upbound.io/network-id" = "ref-gcp-network-from-xr"
