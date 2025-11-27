@@ -1,12 +1,13 @@
-apiVersion: apiextensions.crossplane.io/v1
+apiVersion: apiextensions.crossplane.io/v2
 kind: CompositeResourceDefinition
 metadata:
-  name: xnetworks.gcp.platform.upbound.io
+  name: networks.gcp.platform.upbound.io
 spec:
+  scope: Namespaced
   group: gcp.platform.upbound.io
   names:
-    kind: XNetwork
-    plural: xnetworks
+    kind: Network
+    plural: networks
   versions:
     - name: v1alpha1
       served: true
@@ -27,19 +28,25 @@ spec:
                     region:
                       type: string
                       description: Region is the region you'd like your resource to be created in.
-                    deletionPolicy:
-                      description: When the Composition is deleted, delete the GCP resources. Defaults to Delete
-                      enum:
-                        - Delete
-                        - Orphan
-                      type: string
-                      default: Delete
+                    managementPolicies:
+                      description: ManagementPolicies for the resources. Defaults to ["*"] which includes all operations.
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - "*"
+                          - Create
+                          - Observe
+                          - Update
+                          - Delete
+                          - LateInitialize
+                      default: ["*"]
                     providerConfigName:
                       description: Crossplane ProviderConfig to use for provisioning this resources
                       type: string
                       default: default
                   required:
-                    - deletionPolicy
+                    - managementPolicies
                     - providerConfigName
                     - id
                     - region
