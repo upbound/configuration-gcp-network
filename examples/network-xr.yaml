@@ -1,7 +1,8 @@
 apiVersion: gcp.platform.upbound.io/v1alpha1
-kind: XNetwork
+kind: Network
 metadata:
   name: ref-gcp-network
+  namespace: default
 spec:
   parameters:
     id: ref-gcp-network-from-xr

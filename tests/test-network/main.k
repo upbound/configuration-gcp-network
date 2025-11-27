@@ -1,5 +1,5 @@
 import models.io.upbound.dev.meta.v1alpha1 as metav1alpha1
-import models.io.upbound.gcp.compute.v1beta1 as computev1beta1
+import models.io.upbound.gcpm.compute.v1beta1 as computev1beta1
 import models.io.upbound.platform.gcp.v1alpha1 as platformgcpv1alpha1
 
 _items = [
@@ -7,7 +7,7 @@ _items = [
         metadata.name: "test-network"
         spec = {
             assertResources: [
-                platformgcpv1alpha1.XNetwork{
+                platformgcpv1alpha1.Network{
                     metadata = {
                         name = "ref-gcp-network"
                     }
@@ -20,6 +20,9 @@ _items = [
                 }
                 computev1beta1.Network{
                     metadata = {
+                        annotations = {
+                            "crossplane.io/composition-resource-name" = "network"
+                        }
                         labels = {
                             "crossplane.io/composite" = "ref-gcp-network"
                             "networks.gcp.platform.upbound.io/network-id" = "ref-gcp-network-from-xr"
@@ -31,10 +34,18 @@ _items = [
                             autoCreateSubnetworks = False
                             routingMode = "REGIONAL"
                         }
+                        managementPolicies = ["*"]
+                        providerConfigRef = {
+                            kind = "ProviderConfig"
+                            name = "default"
+                        }
                     }
                 }
                 computev1beta1.Subnetwork{
                     metadata = {
+                        annotations = {
+                            "crossplane.io/composition-resource-name" = "subnetwork"
+                        }
                         generateName = "ref-gcp-network-"
                         labels = {
                             "crossplane.io/composite" = "ref-gcp-network"
@@ -60,12 +71,17 @@ _items = [
                                 }
                             ]
                         }
+                        managementPolicies = ["*"]
+                        providerConfigRef = {
+                            kind = "ProviderConfig"
+                            name = "default"
+                        }
                     }
                 }
             ]
-            compositionPath: "apis/xnetworks/composition.yaml"
+            compositionPath: "apis/networks/composition.yaml"
             xrPath: "examples/network-xr.yaml"
-            xrdPath: "apis/xnetworks/definition.yaml"
+            xrdPath: "apis/networks/definition.yaml"
             timeoutSeconds: 60
             validate: False
         }
