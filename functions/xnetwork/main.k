@@ -2,7 +2,7 @@
 import models.io.upbound.gcp.compute.v1beta1 as computev1beta1
 import models.io.upbound.platform.gcp.v1alpha1 as platformgcpv1alpha1
 
-oxr = platformgcpv1alpha1.XNetwork{**option("params").oxr} # observed composite resource
+oxr = option("params").oxr # observed composite resource
 _ocds = option("params").ocds # observed composed resources
 _dxr = option("params").dxr # desired composite resource
 dcds = option("params").dcds # desired composed resources
