@@ -41,6 +41,44 @@ spec:
                           - Delete
                           - LateInitialize
                       default: ["*"]
+                    externalNames:
+                      description: >-
+                        Optional map of composition-resource-name to
+                        crossplane.io/external-name, used to adopt existing GCP
+                        resources instead of creating new ones. Both resources
+                        this configuration composes are name-as-identifier
+                        types, so setting naming to Deterministic is usually the
+                        better answer; this map is for adopting an object whose
+                        GCP name does not follow from id. Keys are the
+                        krm.kcl.dev/composition-resource-name values ("network",
+                        "subnetwork"). Resources not listed are unaffected.
+                        WARNING: unlike naming, this annotation IS applied to
+                        composed resources that already exist, so pointing it at
+                        a resource Crossplane already manages repoints that
+                        managed resource at a different GCP object and leaks the
+                        original. Omit this field for normal use.
+                      type: object
+                      additionalProperties:
+                        type: string
+                    naming:
+                      description: >-
+                        How composed resources are named. Generated (the
+                        default) lets Crossplane assign {xr-name}-{random}.
+                        Deterministic derives the name from id, which makes the
+                        subnetwork adoptable by a control plane that holds no
+                        prior state about it, because its GCP identifier is its
+                        Kubernetes name. The network is always named from id and
+                        is unaffected by this field. Deterministic applies to
+                        newly created composed resources only: Crossplane
+                        restores the name it already assigned to any composed
+                        resource that already exists, so existing resources are
+                        neither renamed nor replaced, and flipping this flag
+                        does not make an existing deployment adoptable.
+                      type: string
+                      enum:
+                        - Generated
+                        - Deterministic
+                      default: Generated
                     providerConfigName:
                       description: Crossplane ProviderConfig to use for provisioning this resources
                       type: string
