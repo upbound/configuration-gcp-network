@@ -44,9 +44,13 @@ _metadata = lambda name: str -> any {
 # A subnetwork is name-as-identifier, so metadata.name IS its GCP identifier.
 _subnetworkStableName = "{}-subnetwork".format(params.id)
 
+# A derived name only reaches GCP when the resource is not adopted by
+# external-name; otherwise it is just a Kubernetes object name.
 # https://cloud.google.com/compute/docs/reference/rest/v1/subnetworks/insert
+_derivedNames = [n for k, n in {"subnetwork" = _subnetworkStableName} if k not in _externalNames]
+
 _invalidStableNames = [
-    "'{}'".format(n) for n in [_subnetworkStableName]
+    "'{}'".format(n) for n in _derivedNames
     if not (len(n) <= 63 and regex.match(n, "^[a-z]([-a-z0-9]*[a-z0-9])?$"))
 ]
 
@@ -75,7 +79,7 @@ _items = [
     }
     computev1beta1.Subnetwork{
         metadata = _metadata("subnetwork") | {
-            name: _subnetworkStableName
+            name = _subnetworkStableName
         }
         spec = _defaults | {
             forProvider = {
