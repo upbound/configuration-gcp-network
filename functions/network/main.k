@@ -22,8 +22,8 @@ _emptyExternalNames = ["'{}'".format(k) for k, v in _externalNames if not v]
 
 assert len(_emptyExternalNames) == 0, "spec.parameters.externalNames has an empty value for key(s) ${_emptyExternalNames}; an empty external-name adopts nothing and drops back to the generated resource name, so omit the key instead"
 
-# The network's GCP name is params.id in either naming mode, unless
-# externalNames replaces it. GCP rejects a bad one only at apply.
+# The network's GCP name is params.id unless externalNames replaces it.
+# GCP rejects a bad one only at apply.
 _networkName = _externalNames["network"] if "network" in _externalNames else params.id
 
 assert len(_networkName) <= 63 and regex.match(_networkName, "^[a-z]([-a-z0-9]*[a-z0-9])?$"), "spec.parameters.id yields network name '${_networkName}', which is not a valid compute network name; a name is at most 63 characters, lowercase letters, numbers and hyphens, starts with a letter and ends with a letter or number, so adjust spec.parameters.id"
@@ -41,27 +41,16 @@ _metadata = lambda name: str -> any {
     }
 }
 
-# Opt-in. A subnetwork is name-as-identifier, so metadata.name IS its GCP
-# identifier. The network is named from id unconditionally; gating it would
-# rename it for every existing consumer.
-_deterministic = (params.naming or "Generated") == "Deterministic"
-
+# A subnetwork is name-as-identifier, so metadata.name IS its GCP identifier.
 _subnetworkStableName = "{}-subnetwork".format(params.id)
 
 # https://cloud.google.com/compute/docs/reference/rest/v1/subnetworks/insert
 _invalidStableNames = [
     "'{}'".format(n) for n in [_subnetworkStableName]
-    if _deterministic and not (len(n) <= 63 and regex.match(n, "^[a-z]([-a-z0-9]*[a-z0-9])?$"))
+    if not (len(n) <= 63 and regex.match(n, "^[a-z]([-a-z0-9]*[a-z0-9])?$"))
 ]
 
-assert len(_invalidStableNames) == 0, "spec.parameters.naming is Deterministic but the derived name(s) ${_invalidStableNames} are not valid subnetwork names; a name is at most 63 characters, lowercase letters, numbers and hyphens, starts with a letter and ends with a letter or number, so adjust spec.parameters.id"
-
-_named = lambda compositionName: str, stableName: str -> any {
-    _metadata(compositionName) | {
-        if _deterministic:
-            name = stableName
-    }
-}
+assert len(_invalidStableNames) == 0, "spec.parameters.id yields derived name(s) ${_invalidStableNames}, which are not valid subnetwork names; the subnetwork is named '{id}-subnetwork' and a name is at most 63 characters, lowercase letters, numbers and hyphens, starting with a letter and ending with a letter or number, so keep spec.parameters.id at 52 characters or fewer"
 
 _defaults = {
     managementPolicies = params.managementPolicies or ["*"]
@@ -85,7 +74,9 @@ _items = [
         }
     }
     computev1beta1.Subnetwork{
-        metadata = _named("subnetwork", _subnetworkStableName)
+        metadata = _metadata("subnetwork") | {
+            name: _subnetworkStableName
+        }
         spec = _defaults | {
             forProvider = {
                 ipCidrRange = "172.16.0.0/16"

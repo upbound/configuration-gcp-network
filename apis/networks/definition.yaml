@@ -24,7 +24,13 @@ spec:
                   properties:
                     id:
                       type: string
-                      description: ID of this Network that other objects will use to refer to it.
+                      description: >-
+                        ID of this Network that other objects will use to refer
+                        to it. Composed resources are named from it, so it must
+                        be at most 52 characters (the subnetwork is named
+                        "{id}-subnetwork" against a 63-character cap), lowercase
+                        letters, numbers and hyphens, starting with a letter and
+                        ending with a letter or number.
                     region:
                       type: string
                       description: Region is the region you'd like your resource to be created in.
@@ -33,29 +39,15 @@ spec:
                         Optional map of krm.kcl.dev/composition-resource-name
                         ("network", "subnetwork") to crossplane.io/external-name,
                         for adopting an existing GCP object whose name does not
-                        follow from id. Values must be non-empty. WARNING:
-                        unlike naming, this annotation IS applied to composed
-                        resources that already exist, so pointing it at one
-                        Crossplane already manages repoints it at a different
-                        GCP object and leaks the original.
+                        follow from id. Values must be non-empty. WARNING: this
+                        annotation IS applied to composed resources that already
+                        exist, so pointing it at one Crossplane already manages
+                        repoints it at a different GCP object and leaks the
+                        original.
                       type: object
                       additionalProperties:
                         type: string
                         minLength: 1
-                    naming:
-                      description: >-
-                        How composed resources are named. Generated (the
-                        default) lets Crossplane assign {xr-name}-{random};
-                        Deterministic names the subnetwork from id, making it
-                        adoptable. The network is named from id in either mode.
-                        Applies to newly created resources only: Crossplane
-                        keeps the name it already assigned, so this does not
-                        make an existing deployment adoptable.
-                      type: string
-                      enum:
-                        - Generated
-                        - Deterministic
-                      default: Generated
                     managementPolicies:
                       description: ManagementPolicies for the resources. Defaults to ["*"] which includes all operations.
                       type: array
