@@ -30,24 +30,14 @@ spec:
                       description: Region is the region you'd like your resource to be created in.
                     externalNames:
                       description: >-
-                        Optional map of composition-resource-name to
-                        crossplane.io/external-name, used to adopt existing GCP
-                        resources instead of creating new ones. Both resources
-                        this configuration composes are name-as-identifier
-                        types. The subnetwork is named from id only when naming
-                        is Deterministic, which is usually the better answer for
-                        it; the network is named from id in either mode. This
-                        map is for adopting an object whose GCP name does not
-                        follow from id. Keys are the
-                        krm.kcl.dev/composition-resource-name values ("network",
-                        "subnetwork"), and values must be non-empty; an empty
-                        value adopts nothing and falls back to the generated
-                        resource name. Resources not listed are unaffected.
-                        WARNING: unlike naming, this annotation IS applied to
-                        composed resources that already exist, so pointing it at
-                        a resource Crossplane already manages repoints that
-                        managed resource at a different GCP object and leaks the
-                        original. Omit this field for normal use.
+                        Optional map of krm.kcl.dev/composition-resource-name
+                        ("network", "subnetwork") to crossplane.io/external-name,
+                        for adopting an existing GCP object whose name does not
+                        follow from id. Values must be non-empty. WARNING:
+                        unlike naming, this annotation IS applied to composed
+                        resources that already exist, so pointing it at one
+                        Crossplane already manages repoints it at a different
+                        GCP object and leaks the original.
                       type: object
                       additionalProperties:
                         type: string
@@ -55,17 +45,12 @@ spec:
                     naming:
                       description: >-
                         How composed resources are named. Generated (the
-                        default) lets Crossplane assign {xr-name}-{random}.
-                        Deterministic derives the name from id, which makes the
-                        subnetwork adoptable by a control plane that holds no
-                        prior state about it, because its GCP identifier is its
-                        Kubernetes name. The network is always named from id and
-                        is unaffected by this field. Deterministic applies to
-                        newly created composed resources only: Crossplane
-                        restores the name it already assigned to any composed
-                        resource that already exists, so existing resources are
-                        neither renamed nor replaced, and flipping this flag
-                        does not make an existing deployment adoptable.
+                        default) lets Crossplane assign {xr-name}-{random};
+                        Deterministic names the subnetwork from id, making it
+                        adoptable. The network is named from id in either mode.
+                        Applies to newly created resources only: Crossplane
+                        keeps the name it already assigned, so this does not
+                        make an existing deployment adoptable.
                       type: string
                       enum:
                         - Generated

@@ -2,10 +2,8 @@ import models.io.upbound.dev.meta.v1alpha1 as metav1alpha1
 import models.io.upbound.gcpm.compute.v1beta1 as computev1beta1
 import models.io.upbound.platform.gcp.v1alpha1 as platformgcpv1alpha1
 
-# Backward compatibility. With naming unset the XRD defaults it to Generated,
-# which must emit no metadata.name on the subnetwork at all - Crossplane assigns
-# generateName + a random suffix, exactly as it does today. The network is named
-# from id in both modes.
+# Backward compatibility: naming unset must leave the subnetwork on
+# generateName, exactly as today. The network is named from id in both modes.
 _xrGenerated = platformgcpv1alpha1.Network{
     metadata: {
         name: "ref-gcp-network"
@@ -33,9 +31,8 @@ _xrDeterministic = platformgcpv1alpha1.Network{
     }
 }
 
-# An injected external-name makes Crossplane observe the existing GCP object
-# instead of creating a duplicate, whatever the composed resource is called.
-# Resources absent from the map are unaffected.
+# An injected external-name observes the existing GCP object instead of
+# creating a duplicate, whatever the composed resource is called.
 _xrExternalNames = platformgcpv1alpha1.Network{
     metadata: {
         name: "ref-gcp-network"
