@@ -28,19 +28,6 @@ spec:
                     region:
                       type: string
                       description: Region is the region you'd like your resource to be created in.
-                    managementPolicies:
-                      description: ManagementPolicies for the resources. Defaults to ["*"] which includes all operations.
-                      type: array
-                      items:
-                        type: string
-                        enum:
-                          - "*"
-                          - Create
-                          - Observe
-                          - Update
-                          - Delete
-                          - LateInitialize
-                      default: ["*"]
                     externalNames:
                       description: >-
                         Optional map of composition-resource-name to
@@ -51,7 +38,9 @@ spec:
                         better answer; this map is for adopting an object whose
                         GCP name does not follow from id. Keys are the
                         krm.kcl.dev/composition-resource-name values ("network",
-                        "subnetwork"). Resources not listed are unaffected.
+                        "subnetwork"), and values must be non-empty; an empty
+                        value adopts nothing and falls back to the generated
+                        resource name. Resources not listed are unaffected.
                         WARNING: unlike naming, this annotation IS applied to
                         composed resources that already exist, so pointing it at
                         a resource Crossplane already manages repoints that
@@ -60,6 +49,7 @@ spec:
                       type: object
                       additionalProperties:
                         type: string
+                        minLength: 1
                     naming:
                       description: >-
                         How composed resources are named. Generated (the
@@ -79,6 +69,19 @@ spec:
                         - Generated
                         - Deterministic
                       default: Generated
+                    managementPolicies:
+                      description: ManagementPolicies for the resources. Defaults to ["*"] which includes all operations.
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - "*"
+                          - Create
+                          - Observe
+                          - Update
+                          - Delete
+                          - LateInitialize
+                      default: ["*"]
                     providerConfigName:
                       description: Crossplane ProviderConfig to use for provisioning this resources
                       type: string

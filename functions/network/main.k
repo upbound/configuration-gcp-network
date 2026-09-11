@@ -19,6 +19,13 @@ _unknownExternalNames = [k for k in _externalNames if k not in _externalNameKeys
 
 assert len(_unknownExternalNames) == 0, "spec.parameters.externalNames has unknown key(s) ${_unknownExternalNames}; valid keys for this Network are ${_externalNameKeys}"
 
+# An empty value is not adoption: it overrides the external-name a resource
+# hardcodes and crossplane-runtime then falls back to the generated
+# metadata.name, creating a differently named cloud object instead of adopting.
+_emptyExternalNames = ["'{}'".format(k) for k, v in _externalNames if not v]
+
+assert len(_emptyExternalNames) == 0, "spec.parameters.externalNames has an empty value for key(s) ${_emptyExternalNames}; an empty external-name adopts nothing and drops back to the generated resource name, so omit the key instead"
+
 # Every composed resource routes its annotations through here, so injecting the
 # external-name at this single point covers all of them.
 _metadata = lambda name: str -> any {
@@ -39,21 +46,29 @@ _metadata = lambda name: str -> any {
 # configuration.
 _deterministic = (params.naming or "Generated") == "Deterministic"
 
+# Subnetwork names live in a per-project per-region collection of their own, so
+# the suffix is not needed to avoid the network's name; it is there so the GCP
+# object says which composed resource it is.
+_subnetworkStableName = "{}-subnetwork".format(params.id)
+
+# A subnetwork name is at most 63 characters, lowercase letters, numbers and
+# hyphens only, starting with a letter and ending with a letter or number
+# (https://cloud.google.com/compute/docs/reference/rest/v1/subnetworks/insert).
+# GCP rejects a malformed name only once the provider calls the API, long after
+# apply, so reject it here instead of letting it render.
+_invalidStableNames = [
+    "'{}'".format(n) for n in [_subnetworkStableName]
+    if _deterministic and not (len(n) <= 63 and regex.match(n, "^[a-z]([-a-z0-9]*[a-z0-9])?$"))
+]
+
+assert len(_invalidStableNames) == 0, "spec.parameters.naming is Deterministic but the derived name(s) ${_invalidStableNames} are not valid subnetwork names; a name is at most 63 characters, lowercase letters, numbers and hyphens, starts with a letter and ends with a letter or number, so adjust spec.parameters.id"
+
 _named = lambda compositionName: str, stableName: str -> any {
     _metadata(compositionName) | {
         if _deterministic:
             name = stableName
     }
 }
-
-# Subnetwork names live in a per-project per-region collection of their own, so
-# the suffix is not needed to avoid the network's name; it is there so the GCP
-# object says which composed resource it is.
-_subnetworkName = "{}-subnetwork".format(params.id)
-
-# GCP rejects a malformed subnetwork name only once the provider calls the API,
-# long after apply, so check it here instead.
-assert not _deterministic or regex.match(_subnetworkName, r"^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$"), "spec.parameters.id '${params.id}' yields subnetwork name '${_subnetworkName}', which GCP will reject; a subnetwork name is 1-63 characters of lowercase alphanumerics or '-', starting with a letter and ending with a letter or digit"
 
 _defaults = {
     managementPolicies = params.managementPolicies or ["*"]
@@ -77,7 +92,7 @@ _items = [
         }
     }
     computev1beta1.Subnetwork{
-        metadata = _named("subnetwork", _subnetworkName)
+        metadata = _named("subnetwork", _subnetworkStableName)
         spec = _defaults | {
             forProvider = {
                 ipCidrRange = "172.16.0.0/16"
