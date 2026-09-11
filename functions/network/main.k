@@ -26,6 +26,15 @@ _emptyExternalNames = ["'{}'".format(k) for k, v in _externalNames if not v]
 
 assert len(_emptyExternalNames) == 0, "spec.parameters.externalNames has an empty value for key(s) ${_emptyExternalNames}; an empty external-name adopts nothing and drops back to the generated resource name, so omit the key instead"
 
+# The network's GCP name is its metadata.name, which is params.id in either
+# naming mode, unless externalNames replaces it. Validate whichever value lands:
+# a compute network name is at most 63 characters and RFC1035-shaped, and GCP
+# rejects a malformed one only once the provider calls the API. The subnetwork
+# is checked further down, where the Deterministic suffix is applied.
+_networkName = _externalNames["network"] if "network" in _externalNames else params.id
+
+assert len(_networkName) <= 63 and regex.match(_networkName, "^[a-z]([-a-z0-9]*[a-z0-9])?$"), "spec.parameters.id yields network name '${_networkName}', which is not a valid compute network name; a name is at most 63 characters, lowercase letters, numbers and hyphens, starts with a letter and ends with a letter or number, so adjust spec.parameters.id"
+
 # Every composed resource routes its annotations through here, so injecting the
 # external-name at this single point covers all of them.
 _metadata = lambda name: str -> any {
