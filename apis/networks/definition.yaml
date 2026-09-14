@@ -24,10 +24,30 @@ spec:
                   properties:
                     id:
                       type: string
-                      description: ID of this Network that other objects will use to refer to it.
+                      description: >-
+                        ID of this Network that other objects will use to refer
+                        to it. Composed resources are named from it, so it must
+                        be at most 52 characters (the subnetwork is named
+                        "{id}-subnetwork" against a 63-character cap), lowercase
+                        letters, numbers and hyphens, starting with a letter and
+                        ending with a letter or number.
                     region:
                       type: string
                       description: Region is the region you'd like your resource to be created in.
+                    externalNames:
+                      description: >-
+                        Optional map of crossplane.io/composition-resource-name
+                        ("network", "subnetwork") to crossplane.io/external-name,
+                        for adopting an existing GCP object whose name does not
+                        follow from id. Values must be non-empty. WARNING: this
+                        annotation IS applied to composed resources that already
+                        exist, so pointing it at one Crossplane already manages
+                        repoints it at a different GCP object and leaks the
+                        original.
+                      type: object
+                      additionalProperties:
+                        type: string
+                        minLength: 1
                     managementPolicies:
                       description: ManagementPolicies for the resources. Defaults to ["*"] which includes all operations.
                       type: array

@@ -1,17 +1,60 @@
 import models.io.upbound.gcpm.compute.v1beta1 as computev1beta1
 import models.io.upbound.platform.gcp.v1alpha1 as platformgcpv1alpha1
 
+import regex
+
 oxr = platformgcpv1alpha1.Network{**option("params").oxr}
 params = oxr.spec.parameters
 
 providerConfigRefName = params.providerConfigName or None
 
+_externalNames = params.externalNames or {}
+
+# Every composition-resource-name this function can emit.
+_externalNameKeys = ["network", "subnetwork"]
+
+# An unknown or empty key creates a duplicate instead of adopting.
+_unknownExternalNames = [k for k in _externalNames if k not in _externalNameKeys]
+
+assert len(_unknownExternalNames) == 0, "spec.parameters.externalNames has unknown key(s) ${_unknownExternalNames}; valid keys for this Network are ${_externalNameKeys}"
+
+_emptyExternalNames = ["'{}'".format(k) for k, v in _externalNames if not v]
+
+assert len(_emptyExternalNames) == 0, "spec.parameters.externalNames has an empty value for key(s) ${_emptyExternalNames}; an empty external-name adopts nothing and drops back to the generated resource name, so omit the key instead"
+
+# The network's GCP name is params.id unless externalNames replaces it.
+# GCP rejects a bad one only at apply.
+_networkName = _externalNames["network"] if "network" in _externalNames else params.id
+
+assert len(_networkName) <= 63 and regex.match(_networkName, "^[a-z]([-a-z0-9]*[a-z0-9])?$"), "spec.parameters.id yields network name '${_networkName}', which is not a valid compute network name; a name is at most 63 characters, lowercase letters, numbers and hyphens, starts with a letter and ends with a letter or number, so adjust spec.parameters.id"
+
+# Every composed resource routes annotations through here, so the
+# external-name injection covers all of them at one point.
 _metadata = lambda name: str -> any {
     {
-        annotations = {"krm.kcl.dev/composition-resource-name" = name}
+        annotations = {
+            "krm.kcl.dev/composition-resource-name" = name
+            if name in _externalNames:
+                "crossplane.io/external-name" = _externalNames[name]
+        }
         labels = {"networks.gcp.platform.upbound.io/network-id" = params.id}
     }
 }
+
+# A subnetwork is name-as-identifier, so metadata.name IS its GCP identifier.
+_subnetworkStableName = "{}-subnetwork".format(params.id)
+
+# A derived name only reaches GCP when the resource is not adopted by
+# external-name; otherwise it is just a Kubernetes object name.
+# https://cloud.google.com/compute/docs/reference/rest/v1/subnetworks/insert
+_derivedNames = [n for k, n in {"subnetwork" = _subnetworkStableName} if k not in _externalNames]
+
+_invalidStableNames = [
+    "'{}'".format(n) for n in _derivedNames
+    if not (len(n) <= 63 and regex.match(n, "^[a-z]([-a-z0-9]*[a-z0-9])?$"))
+]
+
+assert len(_invalidStableNames) == 0, "spec.parameters.id yields derived name(s) ${_invalidStableNames}, which are not valid subnetwork names; the subnetwork is named '{id}-subnetwork' and a name is at most 63 characters, lowercase letters, numbers and hyphens, starting with a letter and ending with a letter or number, so keep spec.parameters.id at 52 characters or fewer"
 
 _defaults = {
     managementPolicies = params.managementPolicies or ["*"]
@@ -35,7 +78,9 @@ _items = [
         }
     }
     computev1beta1.Subnetwork{
-        metadata = _metadata("subnetwork")
+        metadata = _metadata("subnetwork") | {
+            name = _subnetworkStableName
+        }
         spec = _defaults | {
             forProvider = {
                 ipCidrRange = "172.16.0.0/16"
