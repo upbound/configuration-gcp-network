@@ -36,7 +36,7 @@ spec:
                       description: Region is the region you'd like your resource to be created in.
                     externalNames:
                       description: >-
-                        Optional map of krm.kcl.dev/composition-resource-name
+                        Optional map of crossplane.io/composition-resource-name
                         ("network", "subnetwork") to crossplane.io/external-name,
                         for adopting an existing GCP object whose name does not
                         follow from id. Values must be non-empty. WARNING: this
