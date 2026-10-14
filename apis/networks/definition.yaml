@@ -73,3 +73,73 @@ spec:
                   type: object
               required:
                 - parameters
+            status:
+              description: >-
+                What this Network publishes for other domains to consume. Read
+                these fields, rather than selecting this Network's composed
+                resources, to place a cluster or a database in it.
+              type: object
+              properties:
+                vpc:
+                  description: >-
+                    The VPC network. Named vpc rather than network so that
+                    code generated from this schema keeps Network for the XR
+                    itself.
+                  type: object
+                  properties:
+                    name:
+                      description: >-
+                        GCP name of the network: externalNames.network if set,
+                        otherwise spec.parameters.id. Set from the first
+                        reconcile.
+                      type: string
+                    id:
+                      description: >-
+                        GCP ID of the network, in the form
+                        projects/{project}/global/networks/{name}. Set once the
+                        network exists in GCP.
+                      type: string
+                    selfLink:
+                      description: >-
+                        URI of the network. Set once the network exists in GCP;
+                        wait for it before using the network.
+                      type: string
+                subnetwork:
+                  description: The regional subnetwork, with GKE's secondary ranges.
+                  type: object
+                  properties:
+                    name:
+                      description: >-
+                        GCP name of the subnetwork: externalNames.subnetwork if
+                        set, otherwise "{id}-subnetwork". Set from the first
+                        reconcile.
+                      type: string
+                    region:
+                      description: Region of the subnetwork, spec.parameters.region.
+                      type: string
+                    ipCidrRange:
+                      description: Primary IPv4 range of the subnetwork.
+                      type: string
+                    id:
+                      description: >-
+                        GCP ID of the subnetwork, in the form
+                        projects/{project}/regions/{region}/subnetworks/{name}.
+                        Set once the subnetwork exists in GCP.
+                      type: string
+                    selfLink:
+                      description: >-
+                        URI of the subnetwork. Set once the subnetwork exists in
+                        GCP; wait for it before using the subnetwork.
+                      type: string
+                    secondaryRanges:
+                      description: >-
+                        Names of the subnetwork's secondary ranges, for a GKE
+                        cluster's IP allocation policy.
+                      type: object
+                      properties:
+                        pods:
+                          description: Name of the secondary range for Pod IPs.
+                          type: string
+                        services:
+                          description: Name of the secondary range for Service IPs.
+                          type: string
