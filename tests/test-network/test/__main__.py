@@ -64,6 +64,42 @@ def names(network: str | None = None, subnetwork: str | None = None) -> list[dic
     ]
 
 
+def status(vpc: dict | None = None, subnetwork: dict | None = None) -> dict:
+    """The XR status this Network publishes, plus any fields only known once created."""
+    return {
+        "vpc": {"name": ID, **(vpc or {})},
+        "subnetwork": {
+            "name": f"{ID}-subnetwork",
+            "region": "us-west2",
+            "ipCidrRange": "172.16.0.0/16",
+            "secondaryRanges": {"pods": "pods", "services": "services"},
+            **(subnetwork or {}),
+        },
+    }
+
+
+def observed(kind: str, resource_name: str, name: str, at_provider: dict) -> dict:
+    """A composed resource as it exists once the provider has created it in GCP."""
+    return {
+        "apiVersion": COMPUTE,
+        "kind": kind,
+        "metadata": {
+            "name": name,
+            # Render matches observed resources to the XR within its namespace.
+            "namespace": "default",
+            "annotations": annotations(resource_name),
+            "labels": LABELS,
+        },
+        "spec": {"forProvider": {}},
+        "status": {"atProvider": at_provider},
+    }
+
+
+NETWORK_ID = f"projects/crossplane-playground/global/networks/{ID}"
+SUBNETWORK_ID = f"projects/crossplane-playground/regions/us-west2/subnetworks/{ID}-subnetwork"
+SELF_LINK = "https://www.googleapis.com/compute/v1/"
+
+
 def test(name: str, **spec) -> compositiontest.CompositionTest:
     return compositiontest.CompositionTest(
         metadata=k8s.ObjectMeta(name=name),
@@ -88,6 +124,8 @@ tests = [
                 "kind": "Network",
                 "metadata": {"name": NAME},
                 "spec": {"parameters": {"id": ID, "region": "us-west2", **DEFAULTS}},
+                # Names, region and ranges are published before anything exists in GCP.
+                "status": status(),
             },
             {
                 "apiVersion": COMPUTE,
@@ -131,7 +169,51 @@ tests = [
     test(
         "test-network-external-names",
         xr=xr(externalNames={"network": "adopted-network", "subnetwork": "adopted-subnetwork"}),
-        assertResources=names(network="adopted-network", subnetwork="adopted-subnetwork"),
+        assertResources=[
+            *names(network="adopted-network", subnetwork="adopted-subnetwork"),
+            # Published names are the GCP names, so they follow the adoption.
+            {
+                "apiVersion": "gcp.platform.upbound.io/v1alpha1",
+                "kind": "Network",
+                "metadata": {"name": NAME},
+                "status": {
+                    "vpc": {"name": "adopted-network"},
+                    "subnetwork": {"name": "adopted-subnetwork"},
+                },
+            },
+        ],
+    ),
+    # Once the provider has created both in GCP, their IDs and self links are published: the
+    # selfLinks are what GKE and SQLInstance wait for before using this Network.
+    test(
+        "test-network-status-created",
+        xr=xr(),
+        observedResources=[
+            observed(
+                "Network",
+                "network",
+                ID,
+                {"id": NETWORK_ID, "selfLink": SELF_LINK + NETWORK_ID},
+            ),
+            observed(
+                "Subnetwork",
+                "subnetwork",
+                f"{ID}-subnetwork",
+                {"id": SUBNETWORK_ID, "selfLink": SELF_LINK + SUBNETWORK_ID},
+            ),
+        ],
+        assertResources=[
+            {
+                "apiVersion": "gcp.platform.upbound.io/v1alpha1",
+                "kind": "Network",
+                "metadata": {"name": NAME},
+                "status": status(
+                    vpc={"id": NETWORK_ID, "selfLink": SELF_LINK + NETWORK_ID},
+                    subnetwork={"id": SUBNETWORK_ID, "selfLink": SELF_LINK + SUBNETWORK_ID},
+                ),
+            },
+            *names(),
+        ],
     ),
 ]
 
