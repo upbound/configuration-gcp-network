@@ -86,11 +86,17 @@ def validate(params: dict) -> list[str]:
 
     name = network_name(params)
     if not _valid_name(name):
+        # Name the field the invalid name came from, so the message says what to fix.
+        field = (
+            "spec.parameters.externalNames.network"
+            if NETWORK in external_names
+            else "spec.parameters.id"
+        )
         errors.append(
-            f"spec.parameters.id yields network name '{name}', which is not a valid "
+            f"{field} yields network name '{name}', which is not a valid "
             "compute network name; a name is at most 63 characters, lowercase letters, numbers "
             "and hyphens, starts with a letter and ends with a letter or number, so adjust "
-            "spec.parameters.id"
+            f"{field}"
         )
         # The derived subnetwork name is then invalid for the same reason; one fix, one message.
         if NETWORK not in external_names:

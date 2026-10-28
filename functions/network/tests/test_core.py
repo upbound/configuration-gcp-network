@@ -171,7 +171,10 @@ class TestValidate:
 
     def test_invalid_adopted_network_name(self):
         errors = core.validate(params(externalNames={"network": "Bad_Name"}))
-        assert errors[0].startswith("spec.parameters.id yields network name 'Bad_Name'")
+        assert errors[0].startswith(
+            "spec.parameters.externalNames.network yields network name 'Bad_Name'"
+        )
+        assert errors[0].endswith("so adjust spec.parameters.externalNames.network")
 
     def test_id_too_long_for_the_derived_subnetwork_name(self):
         errors = core.validate(params(id="a" * 53))
